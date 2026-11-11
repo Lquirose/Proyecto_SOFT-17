@@ -36,7 +36,10 @@ jobs:
       - name: 4. Iniciar servidor de la API en segundo plano y ejecutar pruebas
         env:
           PORT: 5000
-          MONGODB_URI: mongodb://localhost:27017/cenfotec_test_db
+          BASE_URL: http://127.0.0.1:5000/api
+          API_URL: http://127.0.0.1:5000/api
+          SERVER_URL: http://127.0.0.1:5000
+          MONGODB_URI: mongodb://127.0.0.1:27017/cenfotec_test_db
           JWT_SECRET: super_secret_token_key_cenfotec_2026
         run: |
           # 1. Levantar la API en segundo plano
