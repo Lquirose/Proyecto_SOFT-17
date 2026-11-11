@@ -33,12 +33,15 @@ jobs:
       - name: 3. Instalar dependencias
         run: npm ci
 
-      - name: 4. Ejecutar pruebas funcionales de API con Jest y cobertura
+      - name: 4. Iniciar servidor de la API en segundo plano y ejecutar pruebas
         env:
           PORT: 5000
           MONGO_URI: mongodb://localhost:27017/cenfotec_test_db
           JWT_SECRET: super_secret_token_key_cenfotec_2026
-        run: npx jest tests/specs --coverage --detectOpenHandles
+        run: |
+          node src/server.js &
+          npx wait-on http://localhost:5000 || sleep 3
+          npx jest src/tests/specs --coverage --detectOpenHandles --forceExit
 
       - name: 5. Análisis estático de código con SonarQube
         uses: SonarSource/sonarcloud-github-action@master
