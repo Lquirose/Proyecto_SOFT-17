@@ -12,7 +12,6 @@ jobs:
     runs-on: ubuntu-latest
 
     services:
-      # Servicio de MongoDB en contenedor para aislar las pruebas de la API
       mongodb:
         image: mongo:latest
         ports:
@@ -22,45 +21,48 @@ jobs:
       - name: 1. Checkout del código fuente
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Requerido por SonarQube para el análisis histórico de Git
+          fetch-depth: 0
 
-      - name: 2. Configurar Node.js (v18)
+      - name: 2. Configurar Node.js (v20)
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
           cache: 'npm'
 
       - name: 3. Instalar dependencias
         run: npm ci
 
-      - name: 4. Iniciar servidor de la API en segundo plano y ejecutar pruebas
+      - name: 4. Iniciar Servidor de la API y Ejecutar Pruebas Funcionales
         env:
           PORT: 5000
+          NODE_ENV: test
           BASE_URL: http://127.0.0.1:5000/api
           API_URL: http://127.0.0.1:5000/api
           SERVER_URL: http://127.0.0.1:5000
+          MONGO_URI: mongodb://127.0.0.1:27017/cenfotec_test_db
           MONGODB_URI: mongodb://127.0.0.1:27017/cenfotec_test_db
+          DB_URI: mongodb://127.0.0.1:27017/cenfotec_test_db
           JWT_SECRET: super_secret_token_key_cenfotec_2026
           SESSION_SECRET: super_secret_token_key_cenfotec_2026
         run: |
-          # 1. Si existe un script de seed o poblamiento de BD, se ejecuta primero
-          node src/seed/seed.js || true
+          # 1. Poblar la BD garantizando soporte de crypto
+          node --enable-source-maps src/seed/seed.js || true
 
           # 2. Levantar la API en segundo plano
           node src/server.js &
           SERVER_PID=$!
           
-          # 3. Esperar 6 segundos a que la API escuche en el puerto 5000
+          # 3. Esperar a que el servidor inicialice la BD y el puerto
           sleep 6
           
-          # 4. Correr la suite completa de Jest
+          # 4. Ejecutar la suite completa de Jest
           npx jest src/tests/specs --coverage --detectOpenHandles --forceExit
           TEST_EXIT_CODE=$?
           
           # 5. Finalizar proceso de la API
           kill -9 $SERVER_PID || true
           
-          # 6. Retornar resultado real
+          # 6. Salir con el estado real de Jest
           exit $TEST_EXIT_CODE
 
       - name: 5. Análisis estático de código con SonarQube
