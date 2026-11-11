@@ -39,9 +39,22 @@ jobs:
           MONGODB_URI: mongodb://localhost:27017/cenfotec_test_db
           JWT_SECRET: super_secret_token_key_cenfotec_2026
         run: |
+          # 1. Levantar la API en segundo plano
           node src/server.js &
-          npx wait-on http://localhost:5000 || sleep 3
+          SERVER_PID=$!
+          
+          # 2. Esperar 6 segundos a que Node levante y conecte a MongoDB
+          sleep 6
+          
+          # 3. Correr Jest
           npx jest src/tests/specs --coverage --detectOpenHandles --forceExit
+          TEST_EXIT_CODE=$?
+          
+          # 4. Finalizar proceso de la API
+          kill -9 $SERVER_PID || true
+          
+          # 5. Salir con el código real de Jest
+          exit $TEST_EXIT_CODE
 
       - name: 5. Análisis estático de código con SonarQube
         uses: SonarSource/sonarcloud-github-action@master
