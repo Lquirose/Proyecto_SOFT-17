@@ -1,0 +1,47 @@
+name: Pipeline CI/CD DistritoCosmetico - SOFT-17 - Caso de estudio 3
+
+on:
+  push:
+    branches: [ "main", "master", "feature/tests" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  test-and-analyze:
+    name: Pruebas de API y análisis de SonarQube
+    runs-on: ubuntu-latest
+
+    services:
+      # Servicio de MongoDB en contenedor para aislar las pruebas de la API
+      mongodb:
+        image: mongo:latest
+        ports:
+          - 27017:27017
+
+    steps:
+      - name: 1. Checkout del código fuente
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Requerido por SonarQube para el análisis histórico de Git
+
+      - name: 2. Configurar Node.js (v18)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: 3. Instalar dependencias
+        run: npm ci
+
+      - name: 4. Ejecutar pruebas funcionales de API con Jest y cobertura
+        env:
+          PORT: 5000
+          MONGO_URI: mongodb://localhost:27017/cenfotec_test_db
+          JWT_SECRET: super_secret_token_key_cenfotec_2026
+        run: npx jest tests/specs --coverage --detectOpenHandles
+
+      - name: 5. Análisis estático de código con SonarQube
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
