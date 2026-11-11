@@ -11,17 +11,22 @@ describe('Pruebas Funcionales de API - Módulo de Productos', () => {
   let categoryName = 'General';
 
   beforeAll(async () => {
-    // 1. Registrar administrador
-    const adminUser = {
-      ...authData.validRegistration(),
-      rol: 'admin'
-    };
-    const authRes = await AuthService.register(adminUser);
-    if (authRes.data && authRes.data.token) {
-      adminToken = authRes.data.token;
+    // 1. Iniciar sesión con el usuario Administrador creado por el seed
+    const loginRes = await AuthService.login({
+      correo: 'admin@distritocosmetico.com',
+      password: 'Admin123456'
+    });
+
+    if (loginRes.data && loginRes.data.token) {
+      adminToken = loginRes.data.token;
+    } else {
+      // Fallback: si el seed usó otras credenciales, registrar con login directo
+      const adminUser = { ...authData.validRegistration(), role: 'admin', rol: 'admin' };
+      const authRes = await AuthService.register(adminUser);
+      adminToken = authRes.data?.token;
     }
 
-    // 2. Crear categoría previa requerida por el esquema de Mongoose
+    // 2. Crear categoría previa requerida para las pruebas de productos
     const newCategory = categoryData.validCategory();
     const catRes = await CategoryService.create(newCategory, adminToken);
     if (catRes.data && catRes.data.data) {

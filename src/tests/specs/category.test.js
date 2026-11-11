@@ -8,15 +8,21 @@ describe('Pruebas Funcionales de API - Módulo de Categorías', () => {
   let createdCategoryId = null;
 
   beforeAll(async () => {
-      const adminUser = {
-        ...authData.validRegistration(),
-        rol: 'admin'
-      };
-      const authRes = await AuthService.register(adminUser);
-      if (authRes.data && authRes.data.token) {
-        adminToken = authRes.data.token;
-      }
+    // 1. Iniciar sesión con el administrador creado previamente por el seed script
+    const loginRes = await AuthService.login({
+      correo: 'admin@distritocosmetico.com',
+      password: 'Admin123456'
     });
+
+    if (loginRes.data && loginRes.data.token) {
+      adminToken = loginRes.data.token;
+    } else {
+      // Fallback de seguridad en caso de fallo en login
+      const adminUser = { ...authData.validRegistration(), rol: 'admin', role: 'admin' };
+      const authRes = await AuthService.register(adminUser);
+      adminToken = authRes.data?.token;
+    }
+  });
 
   describe('GET /api/categories', () => {
 
