@@ -44,6 +44,8 @@ jobs:
           DB_URI: mongodb://127.0.0.1:27017/cenfotec_test_db
           JWT_SECRET: super_secret_token_key_cenfotec_2026
           SESSION_SECRET: super_secret_token_key_cenfotec_2026
+          ADMIN_EMAIL: admin@test.com
+          ADMIN_PASSWORD: Password123!
         run: |
           # 1. Poblar la BD garantizando soporte de crypto
           node --enable-source-maps src/seed/seed.js || true
