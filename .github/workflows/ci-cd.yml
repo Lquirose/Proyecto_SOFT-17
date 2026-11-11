@@ -2,7 +2,7 @@ name: Pipeline CI/CD DistritoCosmetico - SOFT-17 - Caso de estudio 3
 
 on:
   push:
-    branches: [ "main", "master", "feature/tests" ]
+    branches: [ "main", "master", "feature/ci-cd" ]
   pull_request:
     branches: [ "main", "master" ]
 
