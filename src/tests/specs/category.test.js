@@ -8,20 +8,25 @@ describe('Pruebas Funcionales de API - Módulo de Categorías', () => {
   let createdCategoryId = null;
 
   beforeAll(async () => {
-    // 1. Iniciar sesión con el administrador creado previamente por el seed script
-    const loginRes = await AuthService.login({
-      correo: 'admin@distritocosmetico.com',
-      password: 'Admin123456'
-    });
+    const adminCredentials = {
+      correo: 'admin@test.com',
+      password: 'Password123!'
+    };
 
-    if (loginRes.data && loginRes.data.token) {
-      adminToken = loginRes.data.token;
-    } else {
-      // Fallback de seguridad en caso de fallo en login
-      const adminUser = { ...authData.validRegistration(), rol: 'admin', role: 'admin' };
-      const authRes = await AuthService.register(adminUser);
-      adminToken = authRes.data?.token;
+    let loginRes = await AuthService.login(adminCredentials);
+
+    if (!loginRes.data || !loginRes.data.token) {
+      await AuthService.register({
+        nombre: 'Admin Test Category',
+        correo: adminCredentials.correo,
+        password: adminCredentials.password,
+        rol: 'admin',
+        role: 'admin'
+      });
+      loginRes = await AuthService.login(adminCredentials);
     }
+
+    adminToken = loginRes.data?.token || loginRes.data?.data?.token;
   });
 
   describe('GET /api/categories', () => {

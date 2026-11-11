@@ -11,26 +11,35 @@ describe('Pruebas Funcionales de API - Módulo de Productos', () => {
   let categoryName = 'General';
 
   beforeAll(async () => {
-    // 1. Iniciar sesión con el usuario Administrador creado por el seed
-    const loginRes = await AuthService.login({
-      correo: 'admin@distritocosmetico.com',
-      password: 'Admin123456'
-    });
+    const adminCredentials = {
+      correo: 'admin@test.com',
+      password: 'Password123!'
+    };
 
-    if (loginRes.data && loginRes.data.token) {
-      adminToken = loginRes.data.token;
-    } else {
-      // Fallback: si el seed usó otras credenciales, registrar con login directo
-      const adminUser = { ...authData.validRegistration(), role: 'admin', rol: 'admin' };
-      const authRes = await AuthService.register(adminUser);
-      adminToken = authRes.data?.token;
+    // Intentar login primero
+    let loginRes = await AuthService.login(adminCredentials);
+
+    // Si no existe, registrar el usuario administrador
+    if (!loginRes.data || !loginRes.data.token) {
+      await AuthService.register({
+        nombre: 'Admin Test',
+        correo: adminCredentials.correo,
+        password: adminCredentials.password,
+        rol: 'admin',
+        role: 'admin'
+      });
+      loginRes = await AuthService.login(adminCredentials);
     }
 
-    // 2. Crear categoría previa requerida para las pruebas de productos
+    // Extraer token de respuesta
+    adminToken = loginRes.data?.token || loginRes.data?.data?.token;
+
+    // Crear categoría requerida
     const newCategory = categoryData.validCategory();
     const catRes = await CategoryService.create(newCategory, adminToken);
-    if (catRes.data && catRes.data.data) {
-      categoryName = catRes.data.data.nombre;
+    if (catRes.data && (catRes.data.data || catRes.data.categoria)) {
+      const catData = catRes.data.data || catRes.data.categoria;
+      categoryName = catData.nombre;
     }
   });
 
