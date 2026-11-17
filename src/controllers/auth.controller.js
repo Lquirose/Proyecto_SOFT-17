@@ -4,7 +4,8 @@ const sign = require("../utils/jwt");
 
 exports.register = async (req, res, next) => {
   try {
-    const { nombre, correo, password } = req.body;
+    const { nombre, password } = req.body;
+    const correo = typeof req.body.correo === "string" ? req.body.correo : "";
     if (!nombre || !correo || !password)
       return res
         .status(400)
@@ -38,11 +39,10 @@ exports.register = async (req, res, next) => {
 
 exports.login = async (req, res, next) => {
   try {
-    const user = await User.findOne({ correo: req.body.correo });
-    if (
-      !user ||
-      !(await bcrypt.compare(req.body.password || "", user.password))
-    )
+    const correo = typeof req.body.correo === "string" ? req.body.correo : "";
+    const password = typeof req.body.password === "string" ? req.body.password : "";
+    const user = await User.findOne({ correo });
+    if (!user || !(await bcrypt.compare(password, user.password)))
       return res
         .status(401)
         .json({ ok: false, error: "Correo o contraseña incorrectos" });

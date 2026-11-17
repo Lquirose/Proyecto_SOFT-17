@@ -1,11 +1,12 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const secret = require('../utils/secret');
 
 const protect = async (req, res, next) => {
   try {
     const token = (req.headers.authorization || '').replace('Bearer ', '');
     if (!token) return res.status(401).json({ ok: false, error: 'Token requerido' });
-    const payload = jwt.verify(token, process.env.JWT_SECRET || 'dev-secret');
+    const payload = jwt.verify(token, secret());
     req.user = await User.findById(payload.id).select('-password');
     if (!req.user) return res.status(401).json({ ok: false, error: 'Usuario no encontrado' });
     next();

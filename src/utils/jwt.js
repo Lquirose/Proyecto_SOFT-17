@@ -1,2 +1,3 @@
 const jwt = require('jsonwebtoken');
-module.exports = (user) => jwt.sign({ id: user._id, rol: user.rol }, process.env.JWT_SECRET || 'dev-secret', { expiresIn: '7d' });
+const secret = require('./secret');
+module.exports = (user) => jwt.sign({ id: user._id, rol: user.rol }, secret(), { expiresIn: '7d' });

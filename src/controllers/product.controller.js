@@ -11,9 +11,12 @@ const identifierQuery = (value) => {
 exports.list = async (req, res, next) => {
   try {
     const q = {};
-    if (req.query.categoria) q.categoria = req.query.categoria;
-    if (req.query.search)
-      q.nombre = { $regex: req.query.search, $options: "i" };
+    if (typeof req.query.categoria === "string" && req.query.categoria)
+      q.categoria = req.query.categoria;
+    if (typeof req.query.search === "string" && req.query.search) {
+      const texto = req.query.search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      q.nombre = { $regex: texto, $options: "i" };
+    }
     const data = await Product.find(q).sort({ id: 1 });
     res.json({ ok: true, data });
   } catch (e) {

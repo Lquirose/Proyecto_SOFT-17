@@ -1,0 +1,8 @@
+{
+  "all": true,
+  "src": ["src"],
+  "include": ["src/**"],
+  "exclude": ["src/tests/**", "src/seed/**", "**/node_modules/**"],
+  "temp-directory": "coverage/tmp",
+  "reports-dir": "coverage"
+}
